@@ -26,7 +26,7 @@ def get_pdf_text(pdf_files):
             if page_text:
                 text += page_text
     if not text.strip():
-        raise ValueError("❌ No text extracted. Your PDF might be image-based or empty.")
+        raise ValueError("No text extracted. Your PDF might be image-based or empty.")
     return text
 
 
@@ -35,7 +35,7 @@ def get_text_chunks(text):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_text(text)
     if not chunks:
-        raise ValueError("❌ No chunks created from text.")
+        raise ValueError("No chunks created from text.")
     return chunks
 
 
@@ -89,8 +89,8 @@ def get_conversational_chain():
 
 #Streamlit app
 def main():
-    st.set_page_config(page_title="📄 PDF Gemini Chatbot", layout="wide")
-    st.title("📄 PDF Chatbot with Gemini")
+    st.set_page_config(page_title="PDF Gemini Chatbot", layout="wide")
+    st.title("PDF Chatbot with Gemini")
 
     if "chat_history" not in st.session_state:
         # each entry is a dict: {"sender": "user"/"bot", "message": str, "time": timestamp}
@@ -99,7 +99,7 @@ def main():
     with st.sidebar:
         st.header("Upload PDFs")
         pdf_files = st.file_uploader("Choose PDF file(s)", type="pdf", accept_multiple_files=True)
-        if st.button("🔄 Process PDFs"):
+        if st.button("Process PDFs"):
             if not pdf_files:
                 st.error("Please upload at least one PDF file.")
             else:
@@ -107,14 +107,14 @@ def main():
                     text = get_pdf_text(pdf_files)
                     chunks = get_text_chunks(text)
                     build_vector_store(chunks)
-                    st.success("✅ PDFs processed and knowledge base built.")
+                    st.success("PDFs processed and knowledge base built.")
                     st.session_state.chain = get_conversational_chain()
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f"Error: {e}")
 
     if "chain" in st.session_state:
         st.markdown("---")
-        st.subheader("💬 Chat")
+        st.subheader("Chat")
 
         with st.form("chat_form", clear_on_submit=True):
             user_question = st.text_input("Type your question:", placeholder="Ask about the PDFs...")
@@ -128,7 +128,7 @@ def main():
                 "time": now
             })
 
-            with st.spinner("🤖 Thinking..."):
+            with st.spinner("Thinking..."):
                 result = st.session_state.chain.invoke({
                     "question": user_question,
                     "chat_history": [(msg["message"], msg["message"]) for msg in st.session_state.chat_history if msg["sender"] in ["user", "bot"]]
@@ -142,7 +142,7 @@ def main():
                 })
 
         if st.session_state.chat_history:
-            st.markdown("### 📝 Conversation")
+            st.markdown("### Conversation")
             for entry in reversed(st.session_state.chat_history):
                 sender = entry["sender"]
                 msg = entry["message"]
@@ -151,17 +151,17 @@ def main():
                 if sender == "user":
                     st.markdown(f"""
                     <div style='text-align: right; background-color: #DCF8C6; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>
-                        <strong>👤 You [{ts}]:</strong><br>{msg}
+                        <strong> You [{ts}]:</strong><br>{msg}
                     </div>
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
                     <div style='text-align: left; background-color: #F1F0F0; padding: 10px; border-radius: 10px; margin-bottom: 5px;'>
-                        <strong>🤖 Bot [{ts}]:</strong><br>{msg}
+                        <strong> Bot [{ts}]:</strong><br>{msg}
                     </div>
                     """, unsafe_allow_html=True)
 
-        if st.button("🗑️ Clear Conversation"):
+        if st.button("🗑 Clear Conversation"):
             st.session_state.chat_history = []
 
 
